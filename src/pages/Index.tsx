@@ -1,12 +1,15 @@
+
 import { useState } from 'react';
 import { Dashboard } from '@/components/dashboard/Dashboard';
-import { BillingForm } from '@/components/forms/BillingForm';
+import { SweetsForm } from '@/components/forms/SweetsForm';
+import { KhajurChocolateForm } from '@/components/forms/KhajurChocolateForm';
+import { CakesBakeryForm } from '@/components/forms/CakesBakeryForm';
 import { BillingTable } from '@/components/table/BillingTable';
 import { useBillingData } from '@/hooks/useBillingData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart3, Plus, Table } from 'lucide-react';
+import { BarChart3, Table, Candy, Coffee, Cake } from 'lucide-react';
 
 const Index = () => {
   const { 
@@ -49,22 +52,30 @@ const Index = () => {
               <BarChart3 className="h-8 w-8 text-accent" />
               <div>
                 <h1 className="text-3xl font-bold text-foreground">
-                  Billing Management System
+                  Multi-Category Billing Management System
                 </h1>
                 <p className="text-muted-foreground">
-                  Comprehensive billing records management with advanced analytics
+                  Comprehensive billing records for Sweets, Khajur & Chocolate, and Cakes & Bakery
                 </p>
               </div>
             </div>
             
-            <TabsList className="grid w-full max-w-md grid-cols-3">
+            <TabsList className="grid w-full max-w-2xl grid-cols-5">
               <TabsTrigger value="dashboard" className="flex items-center space-x-2">
                 <BarChart3 className="h-4 w-4" />
                 <span className="hidden sm:inline">Dashboard</span>
               </TabsTrigger>
-              <TabsTrigger value="add-record" className="flex items-center space-x-2">
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Add Record</span>
+              <TabsTrigger value="sweets" className="flex items-center space-x-2">
+                <Candy className="h-4 w-4" />
+                <span className="hidden sm:inline">Sweets</span>
+              </TabsTrigger>
+              <TabsTrigger value="khajur-chocolate" className="flex items-center space-x-2">
+                <Coffee className="h-4 w-4" />
+                <span className="hidden sm:inline">Khajur</span>
+              </TabsTrigger>
+              <TabsTrigger value="cakes-bakery" className="flex items-center space-x-2">
+                <Cake className="h-4 w-4" />
+                <span className="hidden sm:inline">Cakes</span>
               </TabsTrigger>
               <TabsTrigger value="table" className="flex items-center space-x-2">
                 <Table className="h-4 w-4" />
@@ -77,8 +88,16 @@ const Index = () => {
             <Dashboard />
           </TabsContent>
 
-          <TabsContent value="add-record" className="space-y-6">
-            <BillingForm onSubmit={addBillingRecord} />
+          <TabsContent value="sweets" className="space-y-6">
+            <SweetsForm onSubmit={addBillingRecord} />
+          </TabsContent>
+
+          <TabsContent value="khajur-chocolate" className="space-y-6">
+            <KhajurChocolateForm onSubmit={addBillingRecord} />
+          </TabsContent>
+
+          <TabsContent value="cakes-bakery" className="space-y-6">
+            <CakesBakeryForm onSubmit={addBillingRecord} />
           </TabsContent>
 
           <TabsContent value="table" className="space-y-6">

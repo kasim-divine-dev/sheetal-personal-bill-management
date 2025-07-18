@@ -1,45 +1,36 @@
+
 import { useState, useEffect, useMemo } from 'react';
-import { BillingRecord, FilterOptions } from '@/types/billing';
+import { BillingRecord, FilterOptions, BillingCategory } from '@/types/billing';
+import { calculateBillingFields } from '@/utils/billingCalculations';
 
 // Sample data for demonstration
 const generateSampleData = (): BillingRecord[] => {
   const sampleData: BillingRecord[] = [];
   const today = new Date();
+  const categories: BillingCategory[] = ['sweets', 'khajur-chocolate', 'cakes-bakery'];
   
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 60; i++) {
     const date = new Date(today);
     date.setDate(date.getDate() - Math.floor(Math.random() * 90));
     
+    const category = categories[Math.floor(Math.random() * categories.length)];
     const totalAmount = Math.floor(Math.random() * 200000) + 10000;
-    const grossAmount = totalAmount / 1.05;
-    const cgst = grossAmount * 0.025;
-    const sgst = grossAmount * 0.025;
-    const totalBillAmount = grossAmount + cgst + sgst;
     
-    let cashPercentage: number;
-    if (totalAmount <= 50000) {
-      cashPercentage = Math.random() * (5 - 3) + 3;
-    } else if (totalAmount <= 100000) {
-      cashPercentage = Math.random() * (9 - 6) + 6;
-    } else if (totalAmount <= 150000) {
-      cashPercentage = Math.random() * (12 - 9) + 9;
-    } else {
-      cashPercentage = Math.random() * (15 - 12) + 12;
-    }
-    
-    const cashSales = Math.round(totalAmount * (cashPercentage / 100));
-    const onlineSales = totalAmount - cashSales;
+    const calculated = calculateBillingFields(totalAmount, category);
     
     sampleData.push({
       id: `bill-${i + 1}`,
       date: date.toISOString().split('T')[0],
       billNos: `${3000 + i * 10}-${3000 + i * 10 + 9}`,
-      grossAmount: Math.round(grossAmount * 100) / 100,
-      cgst: Math.round(cgst * 100) / 100,
-      sgst: Math.round(sgst * 100) / 100,
-      totalBillAmount: Math.round(totalBillAmount * 100) / 100,
-      onlineSales,
-      cashSales,
+      category,
+      grossAmount: calculated.grossAmount || 0,
+      cgst: calculated.cgst || 0,
+      sgst: calculated.sgst || 0,
+      totalBillAmount: calculated.totalBillAmount || 0,
+      onlineSales: calculated.onlineSales,
+      cashSales: calculated.cashSales,
+      khajurAmount: calculated.khajurAmount,
+      chocolateAmount: calculated.chocolateAmount,
       totalAmount
     });
   }
@@ -67,6 +58,11 @@ export const useBillingData = () => {
   // Apply filters
   useEffect(() => {
     let filtered = [...billingRecords];
+
+    // Apply category filter
+    if (filters.category) {
+      filtered = filtered.filter(record => record.category === filters.category);
+    }
 
     // Apply date filters
     if (filters.dateRange?.from && filters.dateRange?.to) {
@@ -131,7 +127,7 @@ export const useBillingData = () => {
     if (searchTerm) {
       filtered = filtered.filter(record =>
         Object.values(record).some(value =>
-          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+          value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
         )
       );
     }
@@ -155,11 +151,27 @@ export const useBillingData = () => {
       .filter(record => new Date(record.date) >= startOfMonth)
       .reduce((sum, record) => sum + record.totalAmount, 0);
 
+    // Category-wise breakdown
+    const sweetsTotal = filteredRecords
+      .filter(record => record.category === 'sweets')
+      .reduce((sum, record) => sum + record.totalAmount, 0);
+      
+    const khajurChocolateTotal = filteredRecords
+      .filter(record => record.category === 'khajur-chocolate')
+      .reduce((sum, record) => sum + record.totalAmount, 0);
+      
+    const cakesBakeryTotal = filteredRecords
+      .filter(record => record.category === 'cakes-bakery')
+      .reduce((sum, record) => sum + record.totalAmount, 0);
+
     return {
       totalEntries,
       totalSales,
       thisWeekSales,
-      thisMonthSales
+      thisMonthSales,
+      sweetsTotal,
+      khajurChocolateTotal,
+      cakesBakeryTotal
     };
   }, [filteredRecords, billingRecords]);
 
