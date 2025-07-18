@@ -43,7 +43,8 @@ export const BillingForm: React.FC<BillingFormProps> = ({ onSubmit }) => {
     }
 
     const totalAmount = parseFloat(formData.totalAmount);
-    const calculated = calculateBillingFields(totalAmount);
+    // Default to 'sweets' category for the generic billing form
+    const calculated = calculateBillingFields(totalAmount, 'sweets');
 
     setFormData(prev => ({
       ...prev,
@@ -81,6 +82,7 @@ export const BillingForm: React.FC<BillingFormProps> = ({ onSubmit }) => {
     const record: Omit<BillingRecord, 'id'> = {
       date: format(formData.date, 'yyyy-MM-dd'),
       billNos: generateBillNumber(parseInt(formData.billStartRange), parseInt(formData.billEndRange)),
+      category: 'sweets', // Default category for generic form
       grossAmount: parseFloat(formData.grossAmount),
       cgst: parseFloat(formData.cgst),
       sgst: parseFloat(formData.sgst),
