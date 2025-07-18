@@ -4,43 +4,59 @@ import { BillingRecord, FilterOptions, BillingCategory } from '@/types/billing';
 import { calculateBillingFields } from '@/utils/billingCalculations';
 
 // Sample data for demonstration
-const generateSampleData = (): BillingRecord[] => {
-  const sampleData: BillingRecord[] = [];
-  const today = new Date();
+const generateSampleData = (): Record<BillingCategory, BillingRecord[]> => {
   const categories: BillingCategory[] = ['sweets', 'khajur-chocolate', 'cakes-bakery'];
+  const categoryData: Record<BillingCategory, BillingRecord[]> = {
+    'sweets': [],
+    'khajur-chocolate': [],
+    'cakes-bakery': []
+  };
   
-  for (let i = 0; i < 60; i++) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - Math.floor(Math.random() * 90));
-    
-    const category = categories[Math.floor(Math.random() * categories.length)];
-    const totalAmount = Math.floor(Math.random() * 200000) + 10000;
-    
-    const calculated = calculateBillingFields(totalAmount, category);
-    
-    sampleData.push({
-      id: `bill-${i + 1}`,
-      date: date.toISOString().split('T')[0],
-      billNos: `${3000 + i * 10}-${3000 + i * 10 + 9}`,
-      category,
-      grossAmount: calculated.grossAmount || 0,
-      cgst: calculated.cgst || 0,
-      sgst: calculated.sgst || 0,
-      totalBillAmount: calculated.totalBillAmount || 0,
-      onlineSales: calculated.onlineSales,
-      cashSales: calculated.cashSales,
-      khajurAmount: calculated.khajurAmount,
-      chocolateAmount: calculated.chocolateAmount,
-      totalAmount
-    });
-  }
+  const today = new Date();
   
-  return sampleData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  categories.forEach(category => {
+    for (let i = 0; i < 20; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - Math.floor(Math.random() * 90));
+      
+      const totalAmount = Math.floor(Math.random() * 200000) + 10000;
+      const calculated = calculateBillingFields(totalAmount, category);
+      
+      categoryData[category].push({
+        id: `${category}-bill-${i + 1}`,
+        date: date.toISOString().split('T')[0],
+        billNos: `${3000 + i * 10}-${3000 + i * 10 + 9}`,
+        category,
+        grossAmount: calculated.grossAmount || 0,
+        cgst: calculated.cgst || 0,
+        sgst: calculated.sgst || 0,
+        totalBillAmount: calculated.totalBillAmount || 0,
+        onlineSales: calculated.onlineSales,
+        cashSales: calculated.cashSales,
+        khajurAmount: calculated.khajurAmount,
+        chocolateAmount: calculated.chocolateAmount,
+        totalAmount
+      });
+    }
+    
+    // Sort by date descending
+    categoryData[category].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  });
+  
+  return categoryData;
 };
 
 export const useBillingData = () => {
-  const [billingRecords, setBillingRecords] = useState<BillingRecord[]>([]);
-  const [filteredRecords, setFilteredRecords] = useState<BillingRecord[]>([]);
+  const [billingData, setBillingData] = useState<Record<BillingCategory, BillingRecord[]>>({
+    'sweets': [],
+    'khajur-chocolate': [],
+    'cakes-bakery': []
+  });
+  const [filteredData, setFilteredData] = useState<Record<BillingCategory, BillingRecord[]>>({
+    'sweets': [],
+    'khajur-chocolate': [],
+    'cakes-bakery': []
+  });
   const [filters, setFilters] = useState<FilterOptions>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -49,119 +65,135 @@ export const useBillingData = () => {
     // Simulate loading
     setTimeout(() => {
       const sampleData = generateSampleData();
-      setBillingRecords(sampleData);
-      setFilteredRecords(sampleData);
+      setBillingData(sampleData);
+      setFilteredData(sampleData);
       setIsLoading(false);
     }, 1000);
   }, []);
 
-  // Apply filters
+  // Apply filters to each category
   useEffect(() => {
-    let filtered = [...billingRecords];
+    const categories: BillingCategory[] = ['sweets', 'khajur-chocolate', 'cakes-bakery'];
+    const newFilteredData: Record<BillingCategory, BillingRecord[]> = {
+      'sweets': [],
+      'khajur-chocolate': [],
+      'cakes-bakery': []
+    };
 
-    // Apply category filter
-    if (filters.category) {
-      filtered = filtered.filter(record => record.category === filters.category);
-    }
+    categories.forEach(category => {
+      let filtered = [...billingData[category]];
 
-    // Apply date filters
-    if (filters.dateRange?.from && filters.dateRange?.to) {
-      filtered = filtered.filter(record => {
-        const recordDate = new Date(record.date);
-        const fromDate = filters.dateRange!.from!;
-        const toDate = filters.dateRange!.to!;
-        return recordDate >= fromDate && recordDate <= toDate;
-      });
-    }
-
-    if (filters.singleDate) {
-      filtered = filtered.filter(record => {
-        const recordDate = new Date(record.date);
-        const filterDate = filters.singleDate!;
-        return recordDate.toDateString() === filterDate.toDateString();
-      });
-    }
-
-    // Apply preset filters
-    if (filters.preset) {
-      const now = new Date();
-      let startDate: Date;
-
-      switch (filters.preset) {
-        case 'today':
-          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          filtered = filtered.filter(record => new Date(record.date) >= startDate);
-          break;
-        case 'yesterday':
-          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-          const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      // Apply category filter
+      if (filters.category && filters.category !== category) {
+        filtered = [];
+      } else {
+        // Apply date filters
+        if (filters.dateRange?.from && filters.dateRange?.to) {
           filtered = filtered.filter(record => {
             const recordDate = new Date(record.date);
-            return recordDate >= startDate && recordDate < endDate;
+            const fromDate = filters.dateRange!.from!;
+            const toDate = filters.dateRange!.to!;
+            return recordDate >= fromDate && recordDate <= toDate;
           });
-          break;
-        case 'last7days':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          filtered = filtered.filter(record => new Date(record.date) >= startDate);
-          break;
-        case 'last30days':
-          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-          filtered = filtered.filter(record => new Date(record.date) >= startDate);
-          break;
-        case 'thisMonth':
-          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-          filtered = filtered.filter(record => new Date(record.date) >= startDate);
-          break;
-        case 'lastMonth':
-          startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-          const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+        }
+
+        if (filters.singleDate) {
           filtered = filtered.filter(record => {
             const recordDate = new Date(record.date);
-            return recordDate >= startDate && recordDate <= lastMonthEnd;
+            const filterDate = filters.singleDate!;
+            return recordDate.toDateString() === filterDate.toDateString();
           });
-          break;
+        }
+
+        // Apply preset filters
+        if (filters.preset) {
+          const now = new Date();
+          let startDate: Date;
+
+          switch (filters.preset) {
+            case 'today':
+              startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+              filtered = filtered.filter(record => new Date(record.date) >= startDate);
+              break;
+            case 'yesterday':
+              startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+              const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+              filtered = filtered.filter(record => {
+                const recordDate = new Date(record.date);
+                return recordDate >= startDate && recordDate < endDate;
+              });
+              break;
+            case 'last7days':
+              startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+              filtered = filtered.filter(record => new Date(record.date) >= startDate);
+              break;
+            case 'last30days':
+              startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+              filtered = filtered.filter(record => new Date(record.date) >= startDate);
+              break;
+            case 'thisMonth':
+              startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+              filtered = filtered.filter(record => new Date(record.date) >= startDate);
+              break;
+            case 'lastMonth':
+              startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+              const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+              filtered = filtered.filter(record => {
+                const recordDate = new Date(record.date);
+                return recordDate >= startDate && recordDate <= lastMonthEnd;
+              });
+              break;
+          }
+        }
+
+        // Apply search filter
+        if (searchTerm) {
+          filtered = filtered.filter(record =>
+            Object.values(record).some(value =>
+              value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+            )
+          );
+        }
       }
-    }
 
-    // Apply search filter
-    if (searchTerm) {
-      filtered = filtered.filter(record =>
-        Object.values(record).some(value =>
-          value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-    }
+      newFilteredData[category] = filtered;
+    });
 
-    setFilteredRecords(filtered);
-  }, [billingRecords, filters, searchTerm]);
+    setFilteredData(newFilteredData);
+  }, [billingData, filters, searchTerm]);
+
+  // Get all records combined for dashboard calculations
+  const allRecords = useMemo(() => {
+    const categories: BillingCategory[] = ['sweets', 'khajur-chocolate', 'cakes-bakery'];
+    return categories.flatMap(category => filteredData[category]);
+  }, [filteredData]);
 
   const dashboardData = useMemo(() => {
-    const totalEntries = filteredRecords.length;
-    const totalSales = filteredRecords.reduce((sum, record) => sum + record.totalAmount, 0);
+    const totalEntries = allRecords.length;
+    const totalSales = allRecords.reduce((sum, record) => sum + record.totalAmount, 0);
     
     const now = new Date();
     const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     
-    const thisWeekSales = billingRecords
+    const allBillingRecords = Object.values(billingData).flat();
+    
+    const thisWeekSales = allBillingRecords
       .filter(record => new Date(record.date) >= startOfWeek)
       .reduce((sum, record) => sum + record.totalAmount, 0);
     
-    const thisMonthSales = billingRecords
+    const thisMonthSales = allBillingRecords
       .filter(record => new Date(record.date) >= startOfMonth)
       .reduce((sum, record) => sum + record.totalAmount, 0);
 
     // Category-wise breakdown
-    const sweetsTotal = filteredRecords
-      .filter(record => record.category === 'sweets')
+    const sweetsTotal = filteredData.sweets
       .reduce((sum, record) => sum + record.totalAmount, 0);
       
-    const khajurChocolateTotal = filteredRecords
-      .filter(record => record.category === 'khajur-chocolate')
+    const khajurChocolateTotal = filteredData['khajur-chocolate']
       .reduce((sum, record) => sum + record.totalAmount, 0);
       
-    const cakesBakeryTotal = filteredRecords
-      .filter(record => record.category === 'cakes-bakery')
+    const cakesBakeryTotal = filteredData['cakes-bakery']
       .reduce((sum, record) => sum + record.totalAmount, 0);
 
     return {
@@ -173,14 +205,18 @@ export const useBillingData = () => {
       khajurChocolateTotal,
       cakesBakeryTotal
     };
-  }, [filteredRecords, billingRecords]);
+  }, [allRecords, billingData, filteredData]);
 
   const addBillingRecord = (record: Omit<BillingRecord, 'id'>) => {
     const newRecord: BillingRecord = {
       ...record,
-      id: `bill-${Date.now()}`
+      id: `${record.category}-bill-${Date.now()}`
     };
-    setBillingRecords(prev => [newRecord, ...prev]);
+    
+    setBillingData(prev => ({
+      ...prev,
+      [record.category]: [newRecord, ...prev[record.category]]
+    }));
   };
 
   const updateFilters = (newFilters: FilterOptions) => {
@@ -192,8 +228,13 @@ export const useBillingData = () => {
     setSearchTerm('');
   };
 
+  const getBillingRecordsByCategory = (category: BillingCategory) => {
+    return filteredData[category];
+  };
+
   return {
-    billingRecords: filteredRecords,
+    billingRecords: allRecords, // For backward compatibility
+    billingData: filteredData,
     dashboardData,
     filters,
     searchTerm,
@@ -201,6 +242,7 @@ export const useBillingData = () => {
     addBillingRecord,
     updateFilters,
     clearFilters,
-    setSearchTerm
+    setSearchTerm,
+    getBillingRecordsByCategory
   };
 };
