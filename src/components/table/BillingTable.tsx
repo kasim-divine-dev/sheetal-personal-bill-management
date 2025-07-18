@@ -7,32 +7,18 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BillingRecord } from '@/types/billing';
 import { formatCurrency } from '@/utils/billingCalculations';
-import { 
-  Search, 
-  ArrowUpDown, 
-  ArrowUp, 
-  ArrowDown, 
-  Download, 
-  Upload,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight
-} from 'lucide-react';
-
+import { Search, ArrowUpDown, ArrowUp, ArrowDown, Download, Upload, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 interface BillingTableProps {
   records: BillingRecord[];
   searchTerm: string;
   onSearchChange: (term: string) => void;
 }
-
 type SortField = keyof BillingRecord;
 type SortDirection = 'asc' | 'desc' | null;
-
-export const BillingTable: React.FC<BillingTableProps> = ({ 
-  records, 
-  searchTerm, 
-  onSearchChange 
+export const BillingTable: React.FC<BillingTableProps> = ({
+  records,
+  searchTerm,
+  onSearchChange
 }) => {
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
@@ -41,17 +27,50 @@ export const BillingTable: React.FC<BillingTableProps> = ({
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
 
   // Column configuration
-  const columns = [
-    { key: 'date' as SortField, label: 'Date', width: 'w-32' },
-    { key: 'billNos' as SortField, label: 'Bill Nos.', width: 'w-32' },
-    { key: 'grossAmount' as SortField, label: 'Gross Amt.', width: 'w-32', currency: true },
-    { key: 'cgst' as SortField, label: 'CGST 2.5%', width: 'w-28', currency: true },
-    { key: 'sgst' as SortField, label: 'SGST 2.5%', width: 'w-28', currency: true },
-    { key: 'totalBillAmount' as SortField, label: 'Total Bill Amt.', width: 'w-36', currency: true },
-    { key: 'onlineSales' as SortField, label: 'Online Sales', width: 'w-32', currency: true },
-    { key: 'cashSales' as SortField, label: 'Cash Sales', width: 'w-32', currency: true },
-    { key: 'totalAmount' as SortField, label: 'Total Amount', width: 'w-36', currency: true }
-  ];
+  const columns = [{
+    key: 'date' as SortField,
+    label: 'Date',
+    width: 'w-32'
+  }, {
+    key: 'billNos' as SortField,
+    label: 'Bill Nos.',
+    width: 'w-32'
+  }, {
+    key: 'grossAmount' as SortField,
+    label: 'Gross Amt.',
+    width: 'w-32',
+    currency: true
+  }, {
+    key: 'cgst' as SortField,
+    label: 'CGST 2.5%',
+    width: 'w-28',
+    currency: true
+  }, {
+    key: 'sgst' as SortField,
+    label: 'SGST 2.5%',
+    width: 'w-28',
+    currency: true
+  }, {
+    key: 'totalBillAmount' as SortField,
+    label: 'Total Bill Amt.',
+    width: 'w-36',
+    currency: true
+  }, {
+    key: 'onlineSales' as SortField,
+    label: 'Online Sales',
+    width: 'w-32',
+    currency: true
+  }, {
+    key: 'cashSales' as SortField,
+    label: 'Cash Sales',
+    width: 'w-32',
+    currency: true
+  }, {
+    key: 'totalAmount' as SortField,
+    label: 'Total Amount',
+    width: 'w-36',
+    currency: true
+  }];
 
   // Filtering and sorting logic
   const filteredAndSortedRecords = useMemo(() => {
@@ -72,18 +91,15 @@ export const BillingTable: React.FC<BillingTableProps> = ({
       filtered.sort((a, b) => {
         const aValue = a[sortField];
         const bValue = b[sortField];
-        
         let comparison = 0;
         if (typeof aValue === 'number' && typeof bValue === 'number') {
           comparison = aValue - bValue;
         } else {
           comparison = aValue.toString().localeCompare(bValue.toString());
         }
-        
         return sortDirection === 'asc' ? comparison : -comparison;
       });
     }
-
     return filtered;
   }, [records, columnFilters, sortField, sortDirection]);
 
@@ -92,7 +108,6 @@ export const BillingTable: React.FC<BillingTableProps> = ({
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   const currentRecords = filteredAndSortedRecords.slice(startIndex, endIndex);
-
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       if (sortDirection === 'asc') {
@@ -108,7 +123,6 @@ export const BillingTable: React.FC<BillingTableProps> = ({
       setSortDirection('asc');
     }
   };
-
   const handleColumnFilter = (column: string, value: string) => {
     setColumnFilters(prev => ({
       ...prev,
@@ -116,7 +130,6 @@ export const BillingTable: React.FC<BillingTableProps> = ({
     }));
     setCurrentPage(1); // Reset to first page when filtering
   };
-
   const getSortIcon = (field: SortField) => {
     if (sortField !== field) {
       return <ArrowUpDown className="h-4 w-4" />;
@@ -126,17 +139,12 @@ export const BillingTable: React.FC<BillingTableProps> = ({
     }
     return <ArrowDown className="h-4 w-4" />;
   };
-
   const handleExportCSV = () => {
     const headers = columns.map(col => col.label);
-    const csvContent = [
-      headers.join(','),
-      ...filteredAndSortedRecords.map(record => 
-        columns.map(col => record[col.key]).join(',')
-      )
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const csvContent = [headers.join(','), ...filteredAndSortedRecords.map(record => columns.map(col => record[col.key]).join(','))].join('\n');
+    const blob = new Blob([csvContent], {
+      type: 'text/csv'
+    });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -144,9 +152,7 @@ export const BillingTable: React.FC<BillingTableProps> = ({
     a.click();
     window.URL.revokeObjectURL(url);
   };
-
-  return (
-    <Card className="bg-card border-border">
+  return <Card className="bg-card border-border">
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
           <CardTitle className="text-xl font-semibold">Billing Records</CardTitle>
@@ -165,12 +171,7 @@ export const BillingTable: React.FC<BillingTableProps> = ({
         {/* Global Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Search across all fields..."
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9"
-          />
+          <Input placeholder="Search across all fields..." value={searchTerm} onChange={e => onSearchChange(e.target.value)} className="pl-9" />
         </div>
       </CardHeader>
 
@@ -180,57 +181,33 @@ export const BillingTable: React.FC<BillingTableProps> = ({
           <Table>
             <TableHeader>
               <TableRow className="bg-secondary/30">
-                {columns.map((column) => (
-                  <TableHead key={column.key} className={`${column.width} font-medium`}>
+                {columns.map(column => <TableHead key={column.key} className={`${column.width} font-medium`}>
                     <div className="space-y-2">
-                      <Button
-                        variant="ghost"
-                        className="h-auto p-0 font-medium hover:bg-transparent"
-                        onClick={() => handleSort(column.key)}
-                      >
+                      <Button variant="ghost" className="h-auto p-0 font-medium hover:bg-transparent" onClick={() => handleSort(column.key)}>
                         <span className="mr-2">{column.label}</span>
                         {getSortIcon(column.key)}
                       </Button>
                       
                       {/* Column filter */}
-                      <Input
-                        placeholder={`Filter ${column.label.toLowerCase()}`}
-                        value={columnFilters[column.key] || ''}
-                        onChange={(e) => handleColumnFilter(column.key, e.target.value)}
-                        className="h-8 text-xs"
-                        onClick={(e) => e.stopPropagation()}
-                      />
+                      
                     </div>
-                  </TableHead>
-                ))}
+                  </TableHead>)}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {currentRecords.length === 0 ? (
-                <TableRow>
+              {currentRecords.length === 0 ? <TableRow>
                   <TableCell colSpan={columns.length} className="text-center py-8 text-muted-foreground">
                     No records found
                   </TableCell>
-                </TableRow>
-              ) : (
-                currentRecords.map((record) => (
-                  <TableRow key={record.id} className="hover:bg-secondary/20 transition-colors">
-                    {columns.map((column) => (
-                      <TableCell key={column.key} className="py-3">
-                        {column.currency ? (
-                          <Badge variant="secondary" className="font-mono">
+                </TableRow> : currentRecords.map(record => <TableRow key={record.id} className="hover:bg-secondary/20 transition-colors">
+                    {columns.map(column => <TableCell key={column.key} className="py-3">
+                        {column.currency ? <Badge variant="secondary" className="font-mono">
                             {formatCurrency(record[column.key] as number)}
-                          </Badge>
-                        ) : (
-                          <span className="text-sm">
+                          </Badge> : <span className="text-sm">
                             {record[column.key]?.toString()}
-                          </span>
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              )}
+                          </span>}
+                      </TableCell>)}
+                  </TableRow>)}
             </TableBody>
           </Table>
         </div>
@@ -239,13 +216,10 @@ export const BillingTable: React.FC<BillingTableProps> = ({
         <div className="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0 p-4 border-t border-border">
           <div className="flex items-center space-x-2">
             <span className="text-sm text-muted-foreground">Rows per page:</span>
-            <Select
-              value={pageSize.toString()}
-              onValueChange={(value) => {
-                setPageSize(parseInt(value));
-                setCurrentPage(1);
-              }}
-            >
+            <Select value={pageSize.toString()} onValueChange={value => {
+            setPageSize(parseInt(value));
+            setCurrentPage(1);
+          }}>
               <SelectTrigger className="w-20">
                 <SelectValue />
               </SelectTrigger>
@@ -264,42 +238,21 @@ export const BillingTable: React.FC<BillingTableProps> = ({
             </span>
             
             <div className="flex items-center space-x-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(1)}
-                disabled={currentPage === 1}
-              >
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>
                 <ChevronsLeft className="h-4 w-4" />
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-              >
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-              >
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(totalPages)}
-                disabled={currentPage === totalPages}
-              >
+              <Button variant="outline" size="sm" onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages}>
                 <ChevronsRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
