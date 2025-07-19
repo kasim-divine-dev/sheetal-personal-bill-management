@@ -49,13 +49,13 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFiltersChan
     });
   };
 
-  const activeFiltersCount = Object.keys(filters).filter(key => 
-    filters[key as keyof FilterOptions] !== undefined && 
+  const activeFiltersCount = Object.keys(filters).filter(key =>
+    filters[key as keyof FilterOptions] !== undefined &&
     filters[key as keyof FilterOptions] !== null
   ).length;
 
   return (
-    <Card className="bg-card border-border">
+    <Card className="bg-card border-border lg:w-64 w-full">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center space-x-2">
@@ -220,8 +220,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ filters, onFiltersChan
             <Button onClick={handleApplyFilters} className="flex-1">
               Apply Filters
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleClearFilters}
               className="flex-1"
             >

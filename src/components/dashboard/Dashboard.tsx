@@ -1,16 +1,14 @@
-import { DashboardWidget } from './DashboardWidget';
-import { FilterPanel } from './FilterPanel';
 import { useBillingData } from '@/hooks/useBillingData';
-import { 
-  FileText, 
-  DollarSign, 
-  Calendar, 
-  TrendingUp,
-  BarChart3
+import {
+  Calendar,
+  DollarSign,
+  FileText,
+  TrendingUp
 } from 'lucide-react';
+import { DashboardWidget } from './DashboardWidget';
 
 export const Dashboard: React.FC = () => {
-  const { dashboardData, filters, updateFilters } = useBillingData();
+  const { dashboardData } = useBillingData();
 
   const widgets = [
     {
@@ -43,39 +41,17 @@ export const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground mt-2">
-            Overview of your billing management system
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <BarChart3 className="h-8 w-8 text-accent" />
-        </div>
-      </div>
-
-      {/* Filter Panel */}
-      <FilterPanel 
-        filters={filters}
-        onFiltersChange={updateFilters}
-      />
-
-      {/* Dashboard Widgets */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        {widgets.map((widget, index) => (
-          <DashboardWidget
-            key={index}
-            title={widget.title}
-            value={widget.value}
-            icon={widget.icon}
-            prefix={widget.prefix}
-            trend={widget.trend}
-          />
-        ))}
-      </div>
+    <div className="lg:col-span-3 grid grid-cols-1 gap-3">
+      {widgets.map((widget, index) => (
+        <DashboardWidget
+          key={index}
+          title={widget.title}
+          value={widget.value}
+          icon={widget.icon}
+          prefix={widget.prefix}
+          trend={widget.trend}
+        />
+      ))}
     </div>
   );
 };

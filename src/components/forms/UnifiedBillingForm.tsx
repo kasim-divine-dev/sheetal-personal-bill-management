@@ -21,7 +21,7 @@ const categoryOptions = [
 ];
 
 export const UnifiedBillingForm: React.FC<UnifiedBillingFormProps> = ({ onSubmit }) => {
-  const [selectedCategory, setSelectedCategory] = useState<BillingCategory | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<BillingCategory | null>('sweets');
 
   const renderForm = () => {
     if (!selectedCategory) {
@@ -47,7 +47,7 @@ export const UnifiedBillingForm: React.FC<UnifiedBillingFormProps> = ({ onSubmit
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 lg:col-span-9">
       {/* Category Selection */}
       <Card className="bg-card border-border">
         <CardHeader>
@@ -60,8 +60,8 @@ export const UnifiedBillingForm: React.FC<UnifiedBillingFormProps> = ({ onSubmit
           <div className="space-y-4">
             <div>
               <Label htmlFor="category">Select Category *</Label>
-              <Select 
-                value={selectedCategory || ''} 
+              <Select
+                value={selectedCategory || ''}
                 onValueChange={(value) => setSelectedCategory(value as BillingCategory)}
               >
                 <SelectTrigger className="w-full mt-1">
